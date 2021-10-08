@@ -194,3 +194,9 @@ lam = np.power(1/(gamma(alpha)*(ybar/alpha)**(alpha)), n)
 lam = lam * np.prod(np.power((gamma(alphavec) * np.power(ybarvec/alphavec, 
 alphavec)), nvec))
 lam *= np.prod(np.prod(np.power(yarr, alpha-alphavec), axis=1))
+
+# Test statistic
+stat = -2*np.log(lam)
+
+# P-value
+pval = 1 - chi2.cdf(stat, 2*m-2)
