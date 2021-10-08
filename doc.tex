@@ -1,0 +1,207 @@
+\documentclass[12pt,a4paper,openright]{article}
+\setcounter{secnumdepth}{0}
+\usepackage{gensymb}
+\usepackage{amsmath}
+\usepackage{amssymb}
+\usepackage{enumitem}
+\usepackage{graphicx}
+\usepackage{sansmath}
+\usepackage{pst-eucl}
+\usepackage[UKenglish]{isodate}
+\usepackage[UKenglish]{babel}
+\usepackage{float}
+\usepackage[numbered,framed]{matlab-prettifier}
+\usepackage[T1]{fontenc}
+\usepackage{setspace}
+\usepackage{sectsty}
+\usepackage[colorlinks=true,linkcolor=blue,urlcolor=black,bookmarksopen=true]{hyperref}
+\newcommand{\E}{\mathbb{E}}
+\newcommand{\eqn}[1]{Equation \ref{#1}}
+\newcommand{\ovY}{\overline{Y}}
+\newcommand{\wmu}{\widehat{\mu}}
+\newcommand{\wst}{\widehat{\sigma^2}}
+\newcommand{\B}{\mathbb{B}}
+\newcommand{\RR}{\mathrm{RR}}
+\newcommand{\var}{\mathrm{var}}
+\newcommand{\MSE}{\mathrm{MSE}}
+\newcommand{\SST}{\mathrm{SST}}
+\newcommand{\MST}{\mathrm{MST}}
+\newcommand{\SSE}{\mathrm{SSE}}
+\newcommand{\wal}{\widehat{\alpha}}
+\newcommand{\wbe}{\widehat{\beta}}
+\newcommand{\SSS}{\mathrm{SS}}
+\newcommand{\GamD}{\mathrm{Gamma}}
+\newcommand{\SSTotal}{\mathrm{Total\hspace{0.1cm}SS}}
+\newcommand{\cov}{\mathrm{cov}}
+\newcommand{\eff}{\mathrm{eff}}
+\newcommand{\CM}{\mathrm{CM}}
+\newcommand{\expy}{\exp\left(\dfrac{\overline{Y}}{\wbe}\right)}
+\newcommand{\corr}{\mathrm{corr}}
+\newcommand{\Poisson}{\mathrm{Poisson}}
+\newcommand{\Binomial}{\mathrm{Binomial}}
+\setlength{\parindent}{0pt}
+\renewcommand{\baselinestretch}{2.0}
+\usepackage[margin=0.1in]{geometry}
+\title{Likelihood ratio test for a gamma distribution}
+\author{Brenton Horne}
+
+\begin{document}
+	\maketitle
+	\tableofcontents
+	\newpage
+	
+	\section{Definitions}
+	Let $Y_{ij}$ denote the $j$th observation from the $i$th treatment group, $i=1, 2, 3, ..., m$ and $j=1, 2, 3, ..., n_i$. 
+	
+	\begin{align*}
+		n &= \sum_{i=1}^m n_i \\
+		\overline{Y} &= \dfrac{1}{n} \sum_{i=1}^m \sum_{j=1}^{n_i} Y_{ij} \\
+		\overline{Y}_i &= \dfrac{1}{n_i} \sum_{j=1}^{n_i} Y_{ij}
+	\end{align*}
+	
+	\section{Hypotheses}
+	$H_0$: $Y_{ij} \sim \GamD(\alpha, \beta)$ \\
+	$H_A$: $Y_{ij} \sim \GamD(\alpha_i, \beta_i)$, where $\alpha_i \neq \alpha_k$ or $\beta_i \neq \beta_k$ for some combination of $i$ and $k$ values. 
+	
+	Let us denote the parameter space under the null hypothesis as $\Omega_0 = \left\{(\alpha, \beta): \hspace{0.1cm} 0 < \alpha, \beta < \infty\right\}$ and the parameter space under the alternative hypothesis as \\$\Omega_a = \left\{(\alpha_i, \beta_i): \hspace{0.1cm} 0 < \alpha_i, \beta_i < \infty,\hspace{0.1cm}\alpha_i \neq \alpha_k \hspace{0.1cm} \mathrm{or}\hspace{0.1cm}\beta_i \neq \beta_k \hspace{0.1cm}\mathrm{for}\hspace{0.1cm}\mathrm{at}\hspace{0.1cm}\mathrm{least}\hspace{0.1cm}\mathrm{one}\hspace{0.1cm}\mathrm{pair}\hspace{0.1cm}\mathrm{of}\hspace{0.1cm}i\hspace{0.1cm}\mathrm{and}\hspace{0.1cm}j \hspace{0.1cm}\mathrm{values}\right\}$. The unrestricted parameter space, $\Omega = \Omega_0 \cup \Omega_a$. 
+	
+	\section{Derivation of the maximum likelihood under the null}
+	\begin{align}
+		L(\Omega_0) &= \prod_{i=1}^m \prod_{j=1}^{n_i} \dfrac{1}{\Gamma(\alpha)\beta^{\alpha}} Y_{ij}^{\alpha-1} \exp{\left(-\dfrac{Y_{ij}}{\beta}\right)} \nonumber \\
+		&= (\Gamma(\alpha)\beta^{\alpha})^{-n} \left(\prod_{i=1}^m \prod_{j=1}^{n_i} Y_{ij}\right)^{\alpha-1} \exp{\left(-\dfrac{n\overline{Y}}{\beta}\right)} \nonumber \\
+		&= \left(\Gamma(\alpha)\beta^{\alpha}\exp\left(\dfrac{\overline{Y}}{\beta}\right)\right)^{-n} \left(\prod_{i=1}^m \prod_{j=1}^{n_i} Y_{ij}\right)^{\alpha-1}. \label{LikNull}
+	\end{align}
+
+	Taking the natural logarithm yields:
+	
+	\begin{align*}
+		\ln{L(\Omega_0)} &= -n\ln{\left(\Gamma(\alpha)\beta^{\alpha}\exp\left(\dfrac{\overline{Y}}{\beta}\right)\right)} + (\alpha-1)\sum_{i=1}^m \sum_{j=1}^{n_i} \ln{Y_{ij}}.
+	\end{align*}
+
+	Next we will take the partial derivative with respect to $\alpha$ and set it to zero:
+	
+	\begin{align}
+		\dfrac{\partial \ln{L(\Omega_0)}}{\partial \alpha} \Bigm\lvert_{\alpha=\widehat{\alpha}, \beta=\widehat{\beta}} &= -n \left(\dfrac{\Gamma'(\wal)\wbe^{\wal}\exp\left(\dfrac{\overline{Y}}{\wbe}\right) + \Gamma(\wal)(\ln{\wbe})\wbe^{\wal}\exp\left(\dfrac{\overline{Y}}{\wbe}\right)}{\Gamma(\wal)\wbe^{\wal}\exp\left(\dfrac{\overline{Y}}{\wbe}\right)}\right) + \sum_{i=1}^{m} \sum_{j=1}^{n_i} \ln{Y_{ij}} =0 \nonumber \\
+		\therefore\hspace{0.2cm} 0 &= -n(\psi^{(0)}(\wal)+\ln{\wbe}) + \sum_{i=1}^{m} \sum_{j=1}^{n_i} \ln{Y_{ij}}. \label{MLENullAlpha}
+	\end{align}
+
+	Where $\psi^{(0)}(\wal)$ is the digamma function. Next we will take the partial derivative with respect to $\beta$ and set it to zero:
+	
+	\begin{align}
+		\dfrac{\partial \ln{L(\Omega_0)}}{\partial \beta}\Bigm \lvert_{\alpha=\widehat{\alpha}, \beta=\widehat{\beta}} &= -n\left(\dfrac{\Gamma(\wal)\wbe^{\wal-1}\wal\expy - \Gamma(\wal)\wbe^{\wal}\expy \dfrac{\overline{Y}}{\wbe^2}}{\Gamma(\wal)\wbe^{\wal}\expy}\right) = 0 \nonumber\\
+		\therefore \hspace{0.2cm} 0 &= -n\left(\dfrac{\wal}{\wbe}-\dfrac{\ovY}{\wbe^2}\right). \label{MLENullBeta}
+	\end{align}
+
+	Multiplying both sides of \eqn{MLENullBeta} by $-\dfrac{\wbe^2}{n}$ yields:
+	
+	\begin{align}
+		0 &= \wal\wbe - \ovY \nonumber \\
+		\therefore \hspace{0.2cm} \wbe &= \dfrac{\ovY}{\wal}. \label{MLENullBeta2}
+	\end{align}
+
+	Re-writing \eqn{MLENullAlpha} using \eqn{MLENullBeta2} yields:
+	
+	\begin{align}
+		0 &= -n\left(\psi^{(0)}(\wal)+\ln{\dfrac{\ovY}{\wal}}\right) + \sum_{i=1}^{m} \sum_{j=1}^{n_i} \ln{Y_{ij}}.\label{MLENullAlpha2}
+	\end{align}
+
+	This equation cannot be analytically solved, so $\wal$ must be numerically approximated using Newton's method and $\wbe$ must be estimated from our approximation of $\wal$ using \eqn{MLENullBeta2}.
+	
+	Before we apply Newton's method to get an algorithm for estimating $\wal$, let us use our MLEs to find our expression for maximum likelihood under the null. Substituting \eqn{MLENullBeta2} into \eqn{LikNull} yields:
+	
+	\begin{align}
+		L(\widehat{\Omega_0}) &= \left(\Gamma(\wal)\left(\dfrac{\ovY}{\wal}\right)^{\wal}\exp(\wal)\right)^{-n} \left(\prod_{i=1}^m \prod_{j=1}^{n_i} Y_{ij}\right)^{\wal-1} \nonumber\\
+		&= \left(\Gamma(\wal)\left(\dfrac{\ovY e}{\wal}\right)^{\wal}\right)^{-n} \prod_{i=1}^m \prod_{j=1}^{n_i} Y_{ij}^{\wal-1}. \label{MLNull}
+	\end{align}
+	
+	\subsection{Using Newton's method to obtain $\wal$}
+	To use Newton's method, we must find the Jacobian for our problem, which should in this case be a scalar as we have only one equation to solve (\eqn{MLENullAlpha2}). Labelling the right-hand side of \eqn{MLENullAlpha2} as $f(\wal)$, and differentiating it with respect to $\wal$ yields:
+	
+	\begin{align*}
+		\dfrac{\partial f}{\partial \wal} &= -n\left(\psi^{(1)}(\wal) - \dfrac{1}{\wal}\right) \\
+		&= n\left(\dfrac{1}{\wal} - \psi^{(1)}(\wal)\right).
+	\end{align*}
+
+	Therefore we can refine our estimate of $\wal$ from an initial guess $\wal^{(0)}$ using:
+	
+	\begin{align*}
+		\wal^{(k+1)} &= \wal^{(k)} - \dfrac{f(\wal^{(k)})}{\dfrac{\partial f}{\partial \wal}\Bigm\lvert_{\wal=\wal^{(k)}}} \\
+		&= \wal^{(k)} - \dfrac{-n\left(\psi^{(0)}(\wal^{(k)})+\ln{\dfrac{\ovY}{\wal^{(k)}}}\right) + \sum_{i=1}^{m} \sum_{j=1}^{n_i} \ln{Y_{ij}}}{n\left(\dfrac{1}{\wal^{(k)}} - \psi^{(1)}(\wal^{(k)})\right)}.
+	\end{align*}
+
+	Where $\psi^{(1)}(\wal^{(k)})$ is the derivative of the digamma function, also known as the trigamma function.
+
+	\section{Derivation of the unrestricted maximum likelihood}
+	\begin{align}
+		L(\Omega) &= \prod_{i=1}^m \prod_{j=1}^{n_i} \dfrac{1}{\Gamma(\alpha_i)\beta_i^{\alpha_i}} Y_{ij}^{\alpha_i-1} \exp{\left(-\dfrac{Y_{ij}}{\beta_i}\right)} \nonumber \\
+		&= \left(\prod_{i=1}^m\left(\Gamma(\alpha_i)\beta_i^{\alpha_i}\right)^{-n_i}\right) \left(\prod_{i=1}^m \prod_{j=1}^{n_i} Y_{ij}^{\alpha_i-1}\right) \exp\left(-\sum_{i=1}^m \dfrac{n_i\ovY_i}{\beta_i}\right). \label{LikUnr}
+	\end{align}
+
+	Taking the natural logarithm yields:
+	
+	\begin{align*}
+		\ln{L(\Omega)} &= -\sum_{i=1}^m n_i\ln{\left(\Gamma(\alpha_i)\beta_i^{\alpha_i}\right)} + \sum_{i=1}^m (\alpha_i-1)\sum_{j=1}^{n_i}\ln{Y_{ij}} - \sum_{i=1}^m \dfrac{n_i\ovY_i}{\beta_i}. 
+	\end{align*}
+
+	Differentiating our log-likelihood with respect to $\alpha_k$ and setting the derivative to zero:
+	
+	\begin{align}
+		\dfrac{\partial \ln{L(\Omega)}}{\partial \alpha_k} \Bigm \lvert_{\alpha_i=\wal_i, \beta_i=\wbe_i} &= -\sum_{i=1}^m n_i \left(\dfrac{\Gamma'(\wal_i)\wbe_i^{\wal_i} + \Gamma(\wal_i)(\ln{\wbe_i})\wbe_i^{\wal_i}}{\Gamma(\wal_i)\wbe_i^{\wal_i}}\right)\delta_{ik} + \sum_{i=1}^m \delta_{ik} \sum_{j=1}^{n_i} \ln{Y_{ij}} =0 \nonumber\\
+		\therefore \hspace{0.2cm} 0 &= -n_k(\psi^{(0)}(\wal_k)+\ln{\wbe_k}) + \sum_{j=1}^{n_k}\ln{Y_{kj}}. \label{MLEUnrAlpha}
+	\end{align}
+
+	Where $\delta_{ik}$ is the Kronecker delta.
+	
+	Differentiating our log-likelihood with respect to $\beta_k$ and setting the derivative to zero:
+	
+	\begin{align}
+		\dfrac{\partial \ln{L(\Omega)}}{\partial \beta_k} \Bigm \lvert_{\alpha_i=\wal_i, \beta_i=\wbe_i} &= -\sum_{i=1}^m n_i \left(\dfrac{\Gamma(\wal_i)\wbe_i^{\wal_i-1}\wal_i}{\Gamma(\wal_i)\wbe_i^{\wal_i}}\right)\delta_{ik} + \sum_{i=1}^m \dfrac{n_i \ovY_i}{\wbe_i^2}\delta_{ik} = 0 \nonumber\\
+		\therefore \hspace{0.2cm} 0 &= -\dfrac{n_k \wal_k}{\wbe_k} + \dfrac{n_k\ovY_k}{\wbe_k^2}. \label{MLEUnrBeta}
+	\end{align}
+
+	Multiplying \eqn{MLEUnrBeta} by $\dfrac{\wbe_k^2}{n_k}$ yields:
+	
+	\begin{align}
+		-\wal_k \wbe_k + \ovY_k &= 0 \nonumber\\
+		\wbe_k &= \dfrac{\ovY_k}{\wal_k}. \label{MLEUnrBeta2}
+	\end{align}
+
+	Substituting \eqn{MLEUnrBeta2} into \eqn{MLEUnrAlpha} yields:
+	
+	\begin{align}
+		0 &= -n_k \left(\psi^{(0)}(\wal_k) + \ln{\left(\dfrac{\ovY_k}{\wal_k}\right)}\right) + \sum_{j=1}^{n_k} \ln{Y_{kj}}.\label{MLEUnrAlpha2}
+	\end{align}
+
+	\eqn{MLEUnrAlpha2} has no closed-form solution and hence $\wal_k$ must be numerically approximated using a technique like Newton's method. Before we obtain an iterative formula based on Newton's method to approximate $\wal_k$, we will use \eqn{MLEUnrBeta2} to obtain the unrestricted maximum likelihood by substituting it into \eqn{LikUnr}:
+	
+	\begin{align}
+		L(\widehat{\Omega}) &= \left(\prod_{i=1}^m\left(\Gamma(\wal_i)\left(\dfrac{\ovY_i}{\wal_i}\right)^{\wal_i}\right)^{-n_i}\right) \left(\prod_{i=1}^m \prod_{j=1}^{n_i} Y_{ij}^{\wal_i-1}\right) \exp\left(-\sum_{i=1}^m \dfrac{n_i\ovY_i}{\dfrac{\ovY_i}{\wal_i}}\right) \nonumber\\
+		&= \left(\prod_{i=1}^m\left(\Gamma(\wal_i)\left(\dfrac{\ovY_i}{\wal_i}\right)^{\wal_i}\right)^{-n_i}\right) \left(\prod_{i=1}^m \prod_{j=1}^{n_i} Y_{ij}^{\wal_i-1}\right) \exp\left(-\sum_{i=1}^m n_i\wal_i\right) \nonumber\\
+		&= \left(\prod_{i=1}^m\left(\Gamma(\wal_i)\left(\dfrac{\ovY_i e}{\wal_i}\right)^{\wal_i}\right)^{-n_i}\right) \prod_{i=1}^m \prod_{j=1}^{n_i} Y_{ij}^{\wal_i-1}. \label{MLUnr}
+	\end{align}
+
+	\subsection{Using Newton's method to obtain $\wal_k$}
+	Calling the right-hand side of \eqn{MLEUnrAlpha2}, $g_k(\{\wal_j\})$, and taking its partial derivative with respect to $\wal_i$ so as to create the Jacobian matrix:
+	
+	\begin{align*}
+		\dfrac{\partial g_k(\{\wal_j\})}{\partial \wal_i} &= -n_k \left(\psi^{(1)}(\wal_k) - \dfrac{1}{\wal_k}\right)\delta_{ik} \\
+		&= n_k \delta_{ik} \left(\dfrac{1}{\wal_k} - \psi^{(1)}(\wal_k)\right).
+	\end{align*}
+
+	Which means our Jacobian $\mathrm{J}=\left(\dfrac{\partial g_k(\{\wal_j\})}{\partial \wal_i}\right)$ will be a diagonal matrix. Hence $\mathrm{J}^{-1} = \left(\left(\dfrac{\partial g_k(\{\wal_j\})}{\partial \wal_i}\right)^{-1}\right)$. If we let $\boldsymbol{\wal} = (\wal_i)$ and $\mathbf{F} = (g_k(\{\wal_j\}))$, then:
+	
+	\begin{align*}
+		\boldsymbol{\wal}^{(l+1)} &= \boldsymbol{\wal}^{(l)} - \mathrm{J}^{-1}\mathbf{F}.
+	\end{align*}
+
+	\section{Likelihood ratio}
+	Therefore the likelihood ratio is:
+	
+	\begin{align*}
+		\lambda &= \dfrac{L(\widehat{\Omega_0})}{L(\widehat{\Omega})} \\
+		&= \dfrac{\left(\Gamma(\wal)\left(\dfrac{\ovY e}{\wal}\right)^{\wal}\right)^{-n} \prod_{i=1}^m \prod_{j=1}^{n_i} Y_{ij}^{\wal-1}}{\left(\prod_{i=1}^m\left(\Gamma(\wal_i)\left(\dfrac{\ovY_i e}{\wal_i}\right)^{\wal_i}\right)^{-n_i}\right) \prod_{i=1}^m \prod_{j=1}^{n_i} Y_{ij}^{\wal_i-1}} \\
+		&= \left(\Gamma(\wal)\left(\dfrac{\ovY }{\wal}\right)^{\wal}\right)^{-n} \left(\prod_{i=1}^m\left(\Gamma(\wal_i)\left(\dfrac{\ovY_i }{\wal_i}\right)^{\wal_i}\right)^{n_i}\right)\prod_{i=1}^m \prod_{j=1}^{n_i} Y_{ij}^{\wal-\wal_i}
+	\end{align*}
+
+	And we know that asymptotically: $-2\ln{\lambda} \sim \chi^2_{2m-2}$. 
+\end{document}
