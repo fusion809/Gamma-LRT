@@ -117,6 +117,28 @@ def getVars(group, y):
     return m, ni, alphavec, nvec, yarr, ybarvec
 
 def funjacUnr(alphavec, nvec, yarr, ybarvec):
+    """
+    Return inverse of Jacobian and function vector for unrestricted MLE 
+    problem.
+
+    Parameters
+    ----------
+    alphavec : NumPy array of floats.
+               Our current estimate of the MLE of alpha_i.
+    nvec     : NumPy array of ints.
+               Contains sample sizes for each group.
+    yarr     : NumPy array of floats.
+               Array of observations, each row corresponds to different groups.
+    ybarvec  : NumPy array of floats.
+               Array of means for each treatment group.
+    
+    Returns
+    -------
+    Jinv     : NumPy array of floats.
+               Inverse of Jacobian.
+    F        : NumPy array of floats.
+               Function values array.
+    """
     Jvec = nvec * (1/alphavec - polygamma(1, alphavec))
     Jinv = np.diagflat(1/Jvec)
     #Jinv = np.diag(Jinv)
@@ -126,18 +148,60 @@ def funjacUnr(alphavec, nvec, yarr, ybarvec):
     return Jinv, F
 
 def funjacNull(alpha, n, yarr, ybar):
+    """
+    Return Jacobian and function vector for null MLE problem.
+
+    Parameters
+    ----------
+    alpha : float.
+            Initial guess of the MLE of alpha under the null.
+    n     : int.
+            Total number of observations.
+    yarr  : NumPy array of floats.
+            Array of observations with each row corresponding to different 
+            groups.
+    ybar  : float.
+            Mean of y. 
+
+    Returns
+    -------
+    J     : float.
+            Function derivative.
+    F     : float.
+            Function value. 
+    """
     J = n * (1/alpha - polygamma(1, alpha))
     F = -n*(polygamma(0, alpha) + np.log(ybar/alpha)) + np.sum(np.log(yarr))
     return J, F
 
-def newtonsUnr(m, alphavec, nvec, yarr, ybarvec):
+def newtonsUnr(m, alphavec, nvec, yarr, ybarvec, itMax, tol):
+    """
+    Approximate unrestricted MLE of alpha_i using Newton's method.
+
+    Parameters
+    ----------
+    m        : int.
+               Number of groups. 
+    alphavec : NumPy array of floats.
+               Initial guess of the MLE of alpha_i.
+    nvec     : NumPy array of ints.
+               Array of sizes for each sample (group).
+    yarr     : NumPy array of floats.
+               Array of observations with different rows corresponding to
+               different groups.
+    ybarvec  : NumPy array of floats.
+               Array of means for each group.
+    itMax    : int or float.
+               Maximum number of iterations of Newton's method allowed when 
+               estimating our MLE.
+    tol      : float.
+               Relative error tolerance.
+    """
     Jinv, F = funjacUnr(alphavec, nvec, yarr, ybarvec)
     eps = -np.matmul(Jinv, F)
     diff = np.sqrt(np.sum(eps**2)/m)
 
     iteration = 0
-    itMax = 1e3
-    tol = 1e-13
     
     while (tol < diff and iteration < itMax):
         alphavec += eps
@@ -150,13 +214,34 @@ def newtonsUnr(m, alphavec, nvec, yarr, ybarvec):
     print("Number of iterations used to approximate alphavec = {}".format(iteration))
     return alphavec
 
-def newtonsNull(alpha, n, yarr, ybar):
+def newtonsNull(alpha, n, yarr, ybar, itMax, tol):
+    """
+    Approximate MLE of alpha under the null hypothesis using Newton's method.
+
+    Parameters
+    ----------
+    alpha : float.
+            Our initial estimate of alpha.
+    n     : int.
+            Total number of observations.
+    yarr  : NumPy array of floats.
+            All observations arranged in a m x max(nvec) array.
+    ybar  : float.
+            Mean of all observations.
+    itMax : int or float.
+            Maximum number of iterations can be used to estimate alpha.
+    tol   : float.
+            Relative error tolerance.
+    
+    Returns
+    -------
+    alpha : float.
+            Refined estimate of alpha using Newton's method.
+    """
     J, F = funjacNull(alpha, n, yarr, ybar)
     eps = -F/J
     
     iteration = 0
-    itMax = 1e3
-    tol = 1e-13
 
     while (tol < np.abs(eps)/alpha and iteration < itMax):
         alpha += eps
@@ -176,10 +261,12 @@ group, y = readData("ProjectData.csv", 0, 5)
 m, ni, alphavec, nvec, yarr, ybarvec = getVars(group, y)
 n = np.size(y)
 ybar = np.mean(yarr)
-alphavec = newtonsUnr(m, alphavec, nvec, yarr, ybarvec)
+itMax = 1e3
+tol = 1e-13
+alphavec = newtonsUnr(m, alphavec, nvec, yarr, ybarvec, itMax, tol)
 betavec = ybarvec/alphavec
 alpha = 1
-alpha = newtonsNull(alpha, n, yarr, ybar)
+alpha = newtonsNull(alpha, n, yarr, ybar, itMax, tol)
 beta = ybar / alpha
 
 # For my dataset there is an alphavec entry = 260.2153579
@@ -201,5 +288,9 @@ stat = -2*np.log(lam)
 # P-value
 pval = 1 - chi2.cdf(stat, 2*m-2)
 
+# Equivalent test for exponential distribution
+# Under null, all groups share the same exponential distribution parameter.
+# Under alternative hypothesis, at least two groups have different exponential
+# distribution parameters.
 statExp = 2*n*np.log(ybar) - 2*np.sum(nvec * np.log(ybarvec))
 pvalExp = 1 - chi2.cdf(statExp, m-1)
