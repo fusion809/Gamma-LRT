@@ -200,3 +200,6 @@ stat = -2*np.log(lam)
 
 # P-value
 pval = 1 - chi2.cdf(stat, 2*m-2)
+
+statExp = 2*n*np.log(ybar) - 2*np.sum(nvec * np.log(ybarvec))
+pvalExp = 1 - chi2.cdf(statExp, m-1)
