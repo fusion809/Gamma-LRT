@@ -1,4 +1,4 @@
-using StatsFuns, DecFP, CSV, DataFrames, Statistics, SpecialFunctions
+using StatsFuns, CSV, DataFrames, Statistics, SpecialFunctions
 using LinearAlgebra
 
 """
