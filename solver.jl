@@ -72,8 +72,6 @@ function newtonsUnr(m, alphavec, nvec, yarr, ybarvec, itMax, tol)
     eps = -Jinv * F
     diff = sqrt(sum(eps.^2)/m)
     iteration = 0
-    itMax = 1e3
-    tol = 1e-13
 
     while ((tol < diff) && (iteration < itMax))
         alphavec += eps
@@ -98,8 +96,6 @@ function newtonsNull(alpha, n, yarr, ybar, itMax, tol)
     eps = -F/J
     
     iteration = 0
-    itMax = 1e3
-    tol = 1e-13
 
     while ((tol < eps/alpha) && (iteration < itMax))
         alpha += eps
