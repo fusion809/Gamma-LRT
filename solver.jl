@@ -6,7 +6,7 @@ using LinearAlgebra
 """
     getVars(group::Vector{Int64}, y::Vector{Float64})
 
-Computes various required variables from the independent and dependent 
+Compute various required variables from the independent and dependent 
 variables. 
 
 Parameters
@@ -75,9 +75,8 @@ end
     funjacUnr(alphavec::Matrix{BigFloat}, nvec::Matrix{Int64}, 
     yarr::Matrix{BigFloat}, ybarvec::Matrix{BigFloat})
 
-Computes and returns the inverse of the Jacobian and the matrix of function 
-values for computing the unrestricted maximum likelihood estiamtor (MLE) of
-``\\alpha_i``.
+Compute the inverse of the Jacobian and the matrix of function values for 
+computing the unrestricted maximum likelihood estiamtor (MLE) of ``\\alpha_i``.
 
 Parameters
 ----------
@@ -118,9 +117,8 @@ end
     funjacNull(alpha::BigFloat, n::Int64, yarr::Matrix{BigFloat}, 
     ybar::BigFloat)
 
-Computes and returns the derivative and function value required to compute
-the maximum likelihood estimator (MLE) of ``\\alpha`` under the null 
-hypothesis.
+Compute the derivative and function value required to compute the maximum 
+likelihood estimator (MLE) of ``\\alpha`` under the null hypothesis.
 
 Parameters
 ----------
@@ -150,7 +148,7 @@ end
     yarr::Matrix{BigFloat}, ybarvec::Matrix{BigFloat}, itMax::Int64, 
     tol::Float64)
 
-Estimates the unrestricted maximum likelihood estimator (MLE) of ``\\alpha_i`` 
+Estimate the unrestricted maximum likelihood estimator (MLE) of ``\\alpha_i`` 
 using Newton's method.
 
 Parameters
@@ -204,7 +202,7 @@ end
     newtonsNull(alpha::BigFloat, n::Int64, yarr::Matrix, ybar::Float64, 
     itMax::Int64, tol::Float64)
 
-Estimates the maximum likelihood estimator (MLE) of alpha under the null using 
+Estimate the maximum likelihood estimator (MLE) of alpha under the null using 
 Newton's method.
 
 Parameters
@@ -399,16 +397,8 @@ end
 """
     main()
 
-Main function of script, by calling other functions it extracts the required 
-data, performs hypothesis tests and prints the results.
-
-Parameters
-----------
-None.
-
-Returns
--------
-Nothing.
+Calls other functions to extract the required data, perform hypothesis tests 
+and print the results.
 """
 function main()
     # Get problem data and parameters
