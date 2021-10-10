@@ -1,0 +1,151 @@
+\documentclass[12pt,a4paper,openright]{article}
+\setcounter{secnumdepth}{0}
+\usepackage{gensymb}
+\usepackage{amsmath}
+\usepackage{amssymb}
+\usepackage{enumitem}
+\usepackage{graphicx}
+\usepackage{sansmath}
+\usepackage{pst-eucl}
+\usepackage[UKenglish]{isodate}
+\usepackage[UKenglish]{babel}
+\usepackage{float}
+\usepackage[numbered,framed]{matlab-prettifier}
+\usepackage[T1]{fontenc}
+\usepackage{setspace}
+\usepackage{sectsty}
+\usepackage[colorlinks=true,linkcolor=blue,urlcolor=black,bookmarksopen=true]{hyperref}
+\newcommand{\E}{\mathbb{E}}
+\newcommand{\eqn}[1]{Equation \ref{#1}}
+\newcommand{\ovY}{\overline{Y}}
+\newcommand{\wmu}{\widehat{\mu}}
+\newcommand{\wst}{\widehat{\sigma^2}}
+\newcommand{\B}{\mathbb{B}}
+\newcommand{\RR}{\mathrm{RR}}
+\newcommand{\var}{\mathrm{var}}
+\newcommand{\MSE}{\mathrm{MSE}}
+\newcommand{\SST}{\mathrm{SST}}
+\newcommand{\MST}{\mathrm{MST}}
+\newcommand{\SSE}{\mathrm{SSE}}
+\newcommand{\wth}{\widehat{\theta}}
+\newcommand{\wal}{\widehat{\alpha}}
+\newcommand{\wbe}{\widehat{\beta}}
+\newcommand{\SSS}{\mathrm{SS}}
+\newcommand{\GamD}{\mathrm{Gamma}}
+\newcommand{\SSTotal}{\mathrm{Total\hspace{0.1cm}SS}}
+\newcommand{\cov}{\mathrm{cov}}
+\newcommand{\Exp}{\mathrm{Exp}}
+\newcommand{\eff}{\mathrm{eff}}
+\newcommand{\CM}{\mathrm{CM}}
+\newcommand{\expy}{\exp\left(\dfrac{\overline{Y}}{\wbe}\right)}
+\newcommand{\corr}{\mathrm{corr}}
+\newcommand{\Poisson}{\mathrm{Poisson}}
+\newcommand{\Binomial}{\mathrm{Binomial}}
+\setlength{\parindent}{0pt}
+\renewcommand{\baselinestretch}{2.0}
+\usepackage[margin=0.1in]{geometry}
+\title{Likelihood ratio test for samples from exponentially-distributed populations}
+\author{Brenton Horne}
+
+\begin{document}
+	\maketitle
+	\tableofcontents
+	\newpage
+
+    \section{Definitions}
+    Let $Y_{ij}$ denote the $j$th observation from the $i$ treatment group, where $i=1, 2, 3, ..., m$ and $j=1, 2, 3, ..., n_i$. 
+
+    Let:
+	\begin{align*}
+		n &= \sum_{i=1}^m n_i \\
+		\overline{Y} &= \dfrac{1}{n} \sum_{i=1}^m \sum_{j=1}^{n_i} Y_{ij} \\
+		\overline{Y}_i &= \dfrac{1}{n_i} \sum_{j=1}^{n_i} Y_{ij}.
+	\end{align*}
+
+    \section{Hypotheses}
+    $H_0$: $Y_{ij} \sim \Exp(\theta)$ \\
+    $H_A$: $Y_{ij} \sim \Exp(\theta_i)$, where $\theta_i \neq \theta_k$ for some combination of $i$ and $k$ values.
+
+    Let us denote the parameter space under the null hypothesis as $\Omega_0 = \left\{(\theta): \hspace{0.1cm} 0 < \theta < \infty\right\}$ and the parameter space under the alternative hypothesis as $\Omega_a = \left\{(\theta_i): \hspace{0.1cm} 0 < \theta_i < \infty, \hspace{0.1cm}\theta_i \neq \theta_k \hspace{0.1cm}\mathrm{for}\hspace{0.1cm}\mathrm{at}\hspace{0.1cm}\mathrm{least}\hspace{0.1cm}\mathrm{one}\hspace{0.1cm}\mathrm{pair}\hspace{0.1cm}\mathrm{of}\hspace{0.1cm}i\hspace{0.1cm}\mathrm{and}\hspace{0.1cm}k \hspace{0.1cm}\mathrm{values}\right\}$. The unrestricted parameter space is thus $\Omega = \Omega_0 \cup \Omega_a = \left\{(\theta_i): \hspace{0.1cm} 0 < \theta_i < \infty\right\}$.
+
+    \section{Derivation of the maximum likelihood under the null}
+    \begin{align}
+        L(\Omega_0) &= \prod_{i=1}^m \prod_{j=1}^{n_i} \dfrac{1}{\theta} \exp\left(-\dfrac{Y_{ij}}{\theta}\right) \nonumber\\
+        &= \theta^{-n} \exp\left(-\sum_{i=1}^m \sum_{j=1}^{n_i} \dfrac{Y_{ij}}{\theta}\right) \nonumber\\
+        &= \theta^{-n} \exp\left(-\dfrac{n\ovY}{\theta}\right). \label{LikNull}
+    \end{align}
+
+    Therefore the log-likelihood under the null is:
+
+    \begin{align*}
+        \ln{L(\Omega_0)} &= -n\ln{\theta} - \dfrac{n\ovY}{\theta}.
+    \end{align*}
+
+    Differentiating with respect to $\theta$ and setting to zero:
+
+    \begin{align*}
+        \dfrac{\partial \ln{\Omega_0}}{\partial \theta} \Bigm \lvert_{\theta = \wth} &= -\dfrac{n}{\wth} + \dfrac{n\ovY}{\wth^2} = 0.
+    \end{align*}
+
+    Multiplying by $\dfrac{\wth^2}{n}$ yields:
+
+    \begin{align}
+        0 &= -\wth + \ovY \nonumber\\
+        \implies \wth &= \ovY. \label{MLENull}
+    \end{align}
+
+    Substituting \eqn{MLENull} into \eqn{LikNull} therefore yields the maximum likelihood under the null:
+
+    \begin{align}
+        L(\widehat{\Omega_0}) &= \ovY^{-n} \exp\left(-\dfrac{n\ovY}{\ovY}\right) \nonumber\\
+        &= \ovY^{-n} \exp(-n) \nonumber\\
+        &= (\ovY e)^{-n}. \label{MLNull}
+    \end{align}
+
+    \section{Derivation of the unrestricted maximum likelihood}
+    \begin{align}
+        L(\Omega) &= \prod_{i=1}^m \prod_{j=1}^{n_i} \dfrac{1}{\theta_i} \exp\left(-\dfrac{Y_{ij}}{\theta_i}\right) \nonumber \\
+        &= \prod_{i=1}^m \theta_i^{-n_i} \exp\left(-\sum_{j=1}^{n_i} \dfrac{Y_{ij}}{\theta_i}\right) \nonumber \\
+        &= \prod_{i=1}^m \theta_i^{-n_i} \exp\left(-\dfrac{n_i\ovY_i}{\theta_i}\right) \nonumber \\
+        &= \left(\prod_{i=1}^m \theta_i^{-n_i} \right)\exp\left(-\sum_{i=1}^m \dfrac{n_i\ovY_i}{\theta_i}\right).\label{LikUnr}
+    \end{align}
+
+    Thus the log-likelihood is:
+
+    \begin{align}
+        \ln{L(\Omega)} &= -\sum_{i=1}^m n_i \ln{\theta_i} - \sum_{i=1}^m \dfrac{n_i\ovY_i}{\theta_i} \\
+        &= -\sum_{i=1}^m n_i\left(\ln{\theta_i} + \dfrac{\ovY_i}{\theta_i}\right). \label{LogLikUnr}
+    \end{align}
+
+    Taking the partial derivative of \eqn{LogLikUnr} with respect $\theta_k$ and setting to zero:
+
+    \begin{align}
+        \dfrac{\partial \ln{L(\Omega)}}{\partial \theta_k} \Bigm\lvert_{\theta_l = \wth_l} &= -\sum_{i=1}^m n_i\left(\dfrac{1}{\wth_i} - \dfrac{\ovY_i}{\wth_i^2}\right) \delta_{ik} = 0 \nonumber\\
+        -n_k\left(\dfrac{1}{\wth_k}-\dfrac{\ovY_k}{\wth_k^2}\right) &= 0. \label{MLEUnr1}
+    \end{align}
+
+    Multiplying \eqn{MLEUnr1} by $-\dfrac{\wth_k^2}{n_k}$ yields:
+
+    \begin{align}
+        \wth_k - \ovY_k &= 0 \nonumber\\
+        \implies \wth_k &= \ovY_k. \label{MLEUnr2}
+    \end{align}
+
+    Substituting \eqn{MLEUnr2} into \eqn{LikUnr} should yield the unrestricted maximum likelihood:
+
+    \begin{align}
+        L(\widehat{\Omega}) &= \left(\prod_{i=1}^m \ovY_i^{-n_i}\right) \exp\left(-\sum_{i=1}^m \dfrac{n_i\ovY_i}{\ovY_i}\right) \nonumber \\
+        &= \left(\prod_{i=1}^m \ovY_i^{-n_i}\right)\exp(-n). \label{MLUnr}
+    \end{align}
+
+    \section{Likelihood ratio}
+    \begin{align}
+        \lambda &= \dfrac{L(\widehat{\Omega_0})}{L(\widehat{\Omega})} \nonumber \\
+        &= \dfrac{(\ovY e)^{-n}}{\left(\prod_{i=1}^m \ovY_i^{-n_i}\right)\exp(-n)} \nonumber\\
+        &= \ovY^{-n} \prod_{i=1}^m \ovY_i^{n_i} \nonumber \\
+        \therefore \hspace{0.2cm} -2\ln{\lambda} &= -2 \left(-n\ln{\ovY} + \sum_{i=1}^m n_i \ln{\ovY_i}\right) \nonumber\\
+        &= 2n\ln{\ovY} - 2\sum_{i=1}^{m} n_i \ln{\ovY_i}. \label{testSt} 
+    \end{align}
+
+    And we know under the null hypothesis that $-2\ln{\lambda} \sim \chi^2_{m-1}$. 
+\end{document}

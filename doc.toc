@@ -1,9 +1,0 @@
-\babel@toc {UKenglish}{}
-\babel@toc {UKenglish}{}
-\contentsline {section}{Definitions}{2}{section*.2}%
-\contentsline {section}{Hypotheses}{2}{section*.3}%
-\contentsline {section}{Derivation of the maximum likelihood under the null}{2}{section*.4}%
-\contentsline {subsection}{Using Newton's method to obtain $\setbox \z@ \hbox {\mathsurround \z@ $\textstyle \alpha $}\mathaccent "0362{\alpha }$}{4}{section*.5}%
-\contentsline {section}{Derivation of the unrestricted maximum likelihood}{5}{section*.6}%
-\contentsline {subsection}{Using Newton's method to obtain $\setbox \z@ \hbox {\mathsurround \z@ $\textstyle \alpha $}\mathaccent "0362{\alpha }_k$}{6}{section*.7}%
-\contentsline {section}{Likelihood ratio}{7}{section*.8}%

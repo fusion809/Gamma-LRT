@@ -53,17 +53,18 @@
 	\section{Definitions}
 	Let $Y_{ij}$ denote the $j$th observation from the $i$th treatment group, where $i=1, 2, 3, ..., m$ and $j=1, 2, 3, ..., n_i$. 
 	
+	Let:
 	\begin{align*}
 		n &= \sum_{i=1}^m n_i \\
 		\overline{Y} &= \dfrac{1}{n} \sum_{i=1}^m \sum_{j=1}^{n_i} Y_{ij} \\
-		\overline{Y}_i &= \dfrac{1}{n_i} \sum_{j=1}^{n_i} Y_{ij}
+		\overline{Y}_i &= \dfrac{1}{n_i} \sum_{j=1}^{n_i} Y_{ij}.
 	\end{align*}
 	
 	\section{Hypotheses}
 	$H_0$: $Y_{ij} \sim \GamD(\alpha, \beta)$ \\
 	$H_A$: $Y_{ij} \sim \GamD(\alpha_i, \beta_i)$, where $\alpha_i \neq \alpha_k$ or $\beta_i \neq \beta_k$ for some combination of $i$ and $k$ values. 
 	
-	Let us denote the parameter space under the null hypothesis as $\Omega_0 = \left\{(\alpha, \beta): \hspace{0.1cm} 0 < \alpha, \beta < \infty\right\}$ and the parameter space under the alternative hypothesis as \\$\Omega_a = \left\{(\alpha_i, \beta_i): \hspace{0.1cm} 0 < \alpha_i, \beta_i < \infty,\hspace{0.1cm}\alpha_i \neq \alpha_k \hspace{0.1cm} \mathrm{or}\hspace{0.1cm}\beta_i \neq \beta_k \hspace{0.1cm}\mathrm{for}\hspace{0.1cm}\mathrm{at}\hspace{0.1cm}\mathrm{least}\hspace{0.1cm}\mathrm{one}\hspace{0.1cm}\mathrm{pair}\hspace{0.1cm}\mathrm{of}\hspace{0.1cm}i\hspace{0.1cm}\mathrm{and}\hspace{0.1cm}j \hspace{0.1cm}\mathrm{values}\right\}$. The unrestricted parameter space is $\Omega = \Omega_0 \cup \Omega_a$. 
+	Let us denote the parameter space under the null hypothesis as $\Omega_0 = \left\{(\alpha, \beta): \hspace{0.1cm} 0 < \alpha, \beta < \infty\right\}$ and the parameter space under the alternative hypothesis as \\$\Omega_a = \left\{(\alpha_i, \beta_i): \hspace{0.1cm} 0 < \alpha_i, \beta_i < \infty,\hspace{0.1cm}\alpha_i \neq \alpha_k \hspace{0.1cm} \mathrm{or}\hspace{0.1cm}\beta_i \neq \beta_k \hspace{0.1cm}\mathrm{for}\hspace{0.1cm}\mathrm{at}\hspace{0.1cm}\mathrm{least}\hspace{0.1cm}\mathrm{one}\hspace{0.1cm}\mathrm{pair}\hspace{0.1cm}\mathrm{of}\hspace{0.1cm}i\hspace{0.1cm}\mathrm{and}\hspace{0.1cm}k \hspace{0.1cm}\mathrm{values}\right\}$. The unrestricted parameter space is $\Omega = \Omega_0 \cup \Omega_a$. 
 	
 	\section{Derivation of the maximum likelihood under the null}
 	\begin{align}

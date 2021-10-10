@@ -1,0 +1,7 @@
+\babel@toc {UKenglish}{}
+\babel@toc {UKenglish}{}
+\contentsline {section}{Definitions}{2}{section*.2}%
+\contentsline {section}{Hypotheses}{2}{section*.3}%
+\contentsline {section}{Derivation of the maximum likelihood under the null}{2}{section*.4}%
+\contentsline {section}{Derivation of the unrestricted maximum likelihood}{3}{section*.5}%
+\contentsline {section}{Likelihood ratio}{5}{section*.6}%
