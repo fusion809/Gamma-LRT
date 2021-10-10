@@ -199,7 +199,8 @@ def newtonsUnr(m, alphavec, nvec, yarr, ybarvec, itMax, tol):
     """
     Jinv, F = funjacUnr(alphavec, nvec, yarr, ybarvec)
     eps = -np.matmul(Jinv, F)
-    diff = np.sqrt(np.sum(eps**2)/m)
+    epsRel = eps / alphavec
+    diff = np.sqrt(np.sum(epsRel**2)/m)
 
     iteration = 0
     

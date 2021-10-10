@@ -170,17 +170,22 @@ Returns
 of the MLE of ``\\alpha_i``.
 """
 function newtonsUnr(m, alphavec, nvec, yarr, ybarvec, itMax, tol)
+    # Obtain what vars we need for iteration 1
     Jinv, F = funjacUnr(alphavec, nvec, yarr, ybarvec)
     eps = -Jinv * F
-    diff = sqrt(sum(eps.^2)/m)
+    epsRel = eps .* alphavec.^(-1)
+    diff = sqrt(sum(epsRel.^2)/m)
+
+    # Initialize our counter
     iteration = 0
 
+    # Iterate until we get a satisfactorily accurate estimate for the MLE
     while ((tol < diff) && (iteration < itMax))
         alphavec += eps
         Jinv, F = funjacUnr(alphavec, nvec, yarr, ybarvec)
         eps = -Jinv * F
-        epsRel = eps / alphavec
-        diff = sqrt(sum((epsRel^2)/m))
+        epsRel = eps .* alphavec.^(-1)
+        diff = sqrt(sum((epsRel.^2)/m))
         iteration += 1
     end
 
@@ -210,11 +215,14 @@ Returns
 `alpha::BigFloat`: improved estimate of the MLE of `\\alpha`.
 """
 function newtonsNull(alpha, n, yarr, ybar, itMax, tol)
+    # Obtain what vars we need for iteration 1
     J, F = funjacNull(alpha, n, yarr, ybar)
     eps = -F/J
     
+    # Initialize iteration counter
     iteration = 0
 
+    # Iterate until we get a satisfactorily accurate for the MLE
     while ((tol < eps/alpha) && (iteration < itMax))
         alpha += eps
         J, F = funjacNull(alpha, n, yarr, ybar)
