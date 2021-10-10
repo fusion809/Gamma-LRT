@@ -100,11 +100,17 @@ unrestricted MLE problem.
 problem.
 """
 function funjacUnr(alphavec, nvec, yarr, ybarvec)
+    # Jinv is a diagonal matrix composed of elements of 
+    # 1/(partial g_k/partial alpha_i)
+    # Alphavec must be converted to Float64 for polygamma,
+    # for some reason it cannot handle BigFloat.
     Jinv = Diagonal(vec((nvec .* (alphavec.^(-1)-
     polygamma.(1, Float64.(alphavec)))).^(-1)))
+    # Defining logsum to make F's definition shorter
     logsum = reshape(sum(log.(yarr), dims=2), (m, 1))
     F = - nvec .* (polygamma.(0, Float64.(alphavec)) + 
     log.(ybarvec .* alphavec.^(-1))) + logsum
+
     return Jinv, F
 end
 
@@ -268,6 +274,7 @@ stat = -2*log(lam)
 pval = 1-chisqcdf(2*m-2, Float64(stat))
 
 # Printing important data
+println("For gamma model:")
 println("alpha (null)   = ", Float64(alpha))
 println("beta (null)    = ", Float64(beta))
 println("alpha_i        = ", Float64.(alphavec))
@@ -275,3 +282,12 @@ println("beta_i         = ", Float64.(betavec))
 println("Lambda         = ", lam)
 println("Test statistic = ", Float64(stat))
 println("P-value        = ", pval)
+println("---------------------------------------")
+
+# Exponential distribution test
+statExp = 2*n*log(ybar) - 2*sum(nvec .* log.(ybarvec))
+pvalExp = 1-chisqcdf(m-1, Float64(statExp))
+println("For exponential model:")
+println("Test statistic = ", Float64(statExp))
+println("P-value        = ", pvalExp)
+println("---------------------------------------")
