@@ -4,34 +4,67 @@ using LinearAlgebra
 """
     getVars(group::Vector, y::Vector)
 
-Computes various required variables from the grouping (group) and dependent 
-variables (y). Includes m, number of groups; n, total number of observations; 
-ni, maximum sample size; alphavec, m x 1 matrix of our initial guess for 
-``\\alpha_i``; nvec, m x 1 matrix of sample sizes for each group; yarr, 
-m x ni matrix of observations; ybar, the overall mean for all observations;
-and ybarvec, m x 1 matrix of group means.
+Computes various required variables from the independent and dependent 
+variables. 
+
+Parameters
+----------
+`group::Vector{Int64}`: Contains values of the grouping (independent) variable.
+
+`y::Vector{Float64}`: Contains values of the dependent (response) variable.
+
+Returns
+-------
+`m::Int64`: number of groups.
+
+`n::Int64`: total number of observations.
+
+`ni::Int64`: maximum sample size.
+
+`alphavec::Matrix{BigFloat}`: m x 1 matrix of initial guess values for the MLE 
+of ``\\alpha_i``.
+
+`nvec::Matrix{Int64}`: m x 1 matrix of the sample sizes of each group.
+
+`yarr::Matrix{BigFloat}`: m x ni matrix of the observations, with the m rows
+corresponding to different values of the grouping variable.
+
+`ybarvec::Matrix{BigFloat}`: m x 1 matrix of the mean of each group.
 """
 function getVars(group, y)
-    m = maximum(group)
+    # Number of groups should equal the number of unique values of the grouping
+    # variable
+    m = Int(length(unique(group)))
+    
+    # nvec's elements should equal the number of observations for each value of
+    # the grouping variable.
     nvec = zeros((m, 1))
     for i=1:m
         nvec[i, 1] = length(y[isequal.(group, i)])
     end
     nvec = Int.(nvec)
+
+    # Simpler to calculate variables
     n = length(y)
     ni = maximum(nvec)
+
+    # Put observations from y into rows based on the corresponding value of the
+    # grouping variable
     yarr = BigFloat.(zeros((m, ni)))
-    
-    for i=1:m
+    for i=sort(unique(group))
         for j=1:nvec[i, 1]
             yarr[i,j] = y[isequal.(group, i)][j]
         end
     end
 
+    # Means
     ybar = mean(y)
     ybarvec = mean(yarr, dims=2)
     ybarvec = reshape(ybarvec, m, 1)
-    alphavec = 10 * ones((m, 1))
+
+    # Let's use a simple initial guess for the MLE of alpha_i, we know it's 
+    # greater than 0
+    alphavec = 10 * BigFloat.(ones((m, 1)))
 
     return m, n, ni, alphavec, nvec, yarr, ybar, ybarvec
 end
@@ -114,13 +147,17 @@ y = BigFloat.(dataF[:, 6])
 group = dataF[:, 1]
 m, n, ni, alphavec, nvec, yarr, ybar, ybarvec = getVars(group, y)
 
+# Specify restraints of Newton's
+itMax = 1e3
+tol = 1e-13
+
 # Estimate unrestricted MLEs
-alphavec = newtonsUnr(m, alphavec, nvec, yarr, ybarvec)
+alphavec = newtonsUnr(m, alphavec, nvec, yarr, ybarvec, itMax, tol)
 betavec = alphavec.^(-1) .* ybarvec
 
 # Estimate MLEs under null
 alpha = 1
-alpha = newtonsNull(alpha, n, yarr, ybar)
+alpha = newtonsNull(alpha, n, yarr, ybar, itMax, tol)
 beta = ybar/alpha
 
 # Likelihood ratio
