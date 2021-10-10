@@ -1,3 +1,4 @@
+# Written in October 2021 by Brenton Horne
 using StatsFuns, CSV, DataFrames, Statistics, SpecialFunctions
 using LinearAlgebra
 
