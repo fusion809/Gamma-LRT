@@ -21,8 +21,8 @@ Returns
 
 `ni::Int64`: maximum sample size.
 
-`alphavec::Matrix{BigFloat}`: m x 1 matrix of initial guess values for the MLE 
-of ``\\alpha_i``.
+`alphavec::Matrix{BigFloat}`: m x 1 matrix of initial guess values for the 
+maximum likelihood estimator (MLE) of ``\\alpha_i``.
 
 `nvec::Matrix{Int64}`: m x 1 matrix of the sample sizes of each group.
 
@@ -74,7 +74,8 @@ end
     yarr::Matrix{BigFloat}, ybarvec::Matrix{BigFloat})
 
 Computes and returns the inverse of the Jacobian and the matrix of function 
-values for computing the unrestricted MLE of ``\\alpha_i``.
+values for computing the unrestricted maximum likelihood estiamtor (MLE) of
+``\\alpha_i``.
 
 Parameters
 ----------
@@ -106,10 +107,29 @@ function funjacUnr(alphavec, nvec, yarr, ybarvec)
 end
 
 """
-    funjacNull(alpha::Float64, n::Int64, yarr::Matrix, ybar::Matrix)
+    funjacNull(alpha::BigFloat, n::Int64, yarr::Matrix{BigFloat}, 
+    ybar::BigFloat)
 
 Computes and returns the derivative and function value required to compute
-the MLE of alpha under the null hypothesis.
+the maximum likelihood estimator (MLE) of ``\\alpha`` under the null 
+hypothesis.
+
+Parameters
+----------
+`alpha::BigFloat`: current estimate of the MLE of `\\alpha`.
+
+`n::Int64`: total number of observations.
+
+`yarr::Matrix{BigFloat}`: m x ni matrix of observations with different rows
+corresponding to different values of the grouping variable.
+
+`ybar::BigFloat`: mean of all observations.
+
+Returns
+-------
+`J::BigFloat`: function derivative value.
+
+`F::BigFloat`: function value.
 """
 function funjacNull(alpha, n, yarr, ybar)
     J = n * (1/alpha - polygamma(1, Float64(alpha)))
@@ -118,10 +138,36 @@ function funjacNull(alpha, n, yarr, ybar)
 end
 
 """
-    newtonsUnr(m::Int64, alphavec::Matrix, nvec::Matrix, yarr::Matrix, 
-    ybarvec::Matrix, itMax::Int64, tol::Float64)
+    newtonsUnr(m::Int64, alphavec::Matrix{BigFloat}, nvec::Matrix{Int64}, 
+    yarr::Matrix{BigFloat}, ybarvec::Matrix{BigFloat}, itMax::Int64, 
+    tol::Float64)
 
-Estimates the unrestricted MLE of alpha_i using Newton's method.
+Estimates the unrestricted maximum likelihood estimator (MLE) of ``\\alpha_i`` 
+using Newton's method.
+
+Parameters
+----------
+`m::Int64`: number of groups.
+
+`alphavec::Matrix{BigFloat}`: m x 1 matrix of values of our initial estimate 
+of the MLE of ``\\alpha_i``.
+
+`nvec::Matrix{Int64}`: m x 1 matrix of sample sizes of each group.
+
+`yarr::Matrix{Float64}`: m x ni matrix of observations in rows that correspond
+to different values of the grouping variable.
+
+`ybarvec::Matrix{Float64}`: m x 1 matrix of sample means. 
+
+`itMax::Int64`: maximum number of iterations of Newton's method that can be 
+used.
+
+`tol::Float64`: relative error tolerance.
+
+Returns
+-------
+`alphavec::Matrix{BigFloat}`: m x 1 matrix of values of our improved estimate 
+of the MLE of ``\\alpha_i``.
 """
 function newtonsUnr(m, alphavec, nvec, yarr, ybarvec, itMax, tol)
     Jinv, F = funjacUnr(alphavec, nvec, yarr, ybarvec)
@@ -142,10 +188,26 @@ function newtonsUnr(m, alphavec, nvec, yarr, ybarvec, itMax, tol)
 end
 
 """
-    newtonsNull(alpha::Float64, n::Int64, yarr::Matrix, ybar::Float64, 
+    newtonsNull(alpha::BigFloat, n::Int64, yarr::Matrix, ybar::Float64, 
     itMax::Int64, tol::Float64)
 
-Estimates the MLE of alpha under the null using Newton's method.
+Estimates the maximum likelihood estimator (MLE) of alpha under the null using 
+Newton's method.
+
+Parameters
+----------
+`alpha::BigFloat`: initial estimate of the MLE of `\\alpha`.
+
+`n::Int64`: total number of observations.
+
+`yarr::Matrix{BigFloat}`: m x ni matrix of observations with different rows
+corresponding to different values of the grouping variable.
+
+`ybar::BigFloat`: mean of all observations.
+
+Returns
+-------
+`alpha::BigFloat`: improved estimate of the MLE of `\\alpha`.
 """
 function newtonsNull(alpha, n, yarr, ybar, itMax, tol)
     J, F = funjacNull(alpha, n, yarr, ybar)
