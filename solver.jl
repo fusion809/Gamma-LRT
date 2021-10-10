@@ -2,7 +2,7 @@ using StatsFuns, CSV, DataFrames, Statistics, SpecialFunctions
 using LinearAlgebra
 
 """
-    getVars(group::Vector, y::Vector)
+    getVars(group::Vector{Int64}, y::Vector{Float64})
 
 Computes various required variables from the independent and dependent 
 variables. 
@@ -70,15 +70,38 @@ function getVars(group, y)
 end
 
 """
-    funjacUnr(alphavec::Matrix, nvec::Matrix, yarr::Matrix, ybarvec::Matrix)
+    funjacUnr(alphavec::Matrix{BigFloat}, nvec::Matrix{Int64}, 
+    yarr::Matrix{BigFloat}, ybarvec::Matrix{BigFloat})
 
 Computes and returns the inverse of the Jacobian and the matrix of function 
-values for computing the unrestricted MLE of alpha_i.
+values for computing the unrestricted MLE of ``\\alpha_i``.
+
+Parameters
+----------
+`alphavec::Matrix{BigFloat}`: m x 1 matrix of values of our current estimate 
+of the MLE of ``\\alpha_i``.
+
+`nvec::Matrix{Int64}`: m x 1 matrix of sample sizes of each group.
+
+`yarr::Matrix{Float64}`: m x ni matrix of observations in rows that correspond
+to different values of the grouping variable.
+
+`ybarvec::Matrix{Float64}`: m x 1 matrix of sample means. 
+
+Returns
+-------
+`Jinv::Diagonal{BigFloat, Vector{BigFloat}}`: inverse of the Jacobian for the
+unrestricted MLE problem.
+
+`F::Matrix{BigFloat}`: m x 1 matrix of function values for the unrestricted MLE
+problem.
 """
 function funjacUnr(alphavec, nvec, yarr, ybarvec)
-    Jinv = Diagonal(vec((nvec .* (alphavec.^(-1)-polygamma.(1, Float64.(alphavec)))).^(-1)))
+    Jinv = Diagonal(vec((nvec .* (alphavec.^(-1)-
+    polygamma.(1, Float64.(alphavec)))).^(-1)))
     logsum = reshape(sum(log.(yarr), dims=2), (m, 1))
-    F = - nvec .* (polygamma.(0, Float64.(alphavec)) + log.(ybarvec .* alphavec.^(-1))) + logsum
+    F = - nvec .* (polygamma.(0, Float64.(alphavec)) + 
+    log.(ybarvec .* alphavec.^(-1))) + logsum
     return Jinv, F
 end
 
