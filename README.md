@@ -1,7 +1,7 @@
 # Likelihood-ratio test for samples from gamma-distributed populations
 In this repository, you will find a LaTeX document ([gamma.tex](/gamma.tex)/[gamma.pdf](/gamma.pdf)) in which I derived a likelihood-ratio test for samples from gamma-distributed populations, then using [Julia](/solver.jl) and [Python scripts](/solver.py) tried to apply said test to data I collected in the experimental project of [STA3300 during semester 1, 2021](https://www.usq.edu.au/course/specification/2021/STA3300-S1-2021-ONC-TWMBA.html). I also derived a likelihood-ratio test for samples from exponentially-distributed populations in [exp.tex](/exp.tex), and applied the test in both scripts. 
 
-The Python script failed in this mission, due to the limitations of 64-bit arithmetic for this particular problem, as values in excess of 1e7496 are obtained in the calculation. mpmath was tried as a solution to this problem, but mpmath libraries cannot be run on NumPy arrays. 
+The Python script failed in its gamma testing mission, due to the limitations of 64-bit arithmetic for this particular problem, as values in excess of 1e7496 are obtained in the calculation. mpmath was tried as a solution to this problem, but mpmath libraries cannot be run on NumPy arrays. 
 
 Despite this, a test was performed that assumed exponentially-distributed populations for the data (documented in [exp.tex](/exp.tex)/[exp.pdf](/exp.pdf)), which yielded a p-value of approximately 0.6585 (a result also obtained by the Julia script), which is of course non-significant. This result was not surprising, if our data followed an exponential distribution, we'd expect a lot more paper aeroplanes that were tested to not fly any distance at all. 
 
