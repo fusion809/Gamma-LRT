@@ -99,7 +99,7 @@ unrestricted MLE problem.
 `F::Matrix{BigFloat}`: m x 1 matrix of function values for the unrestricted MLE
 problem.
 """
-function funjacUnr(alphavec, nvec, yarr, ybarvec)
+function funjacUnr(m, alphavec, nvec, yarr, ybarvec)
     # Jinv is a diagonal matrix composed of elements of 
     # 1/(partial g_k/partial alpha_i)
     # Alphavec must be converted to Float64 for polygamma,
@@ -179,7 +179,7 @@ of the MLE of ``\\alpha_i``.
 """
 function newtonsUnr(m, alphavec, nvec, yarr, ybarvec, itMax, tol)
     # Obtain what vars we need for iteration 1
-    Jinv, F = funjacUnr(alphavec, nvec, yarr, ybarvec)
+    Jinv, F = funjacUnr(m, alphavec, nvec, yarr, ybarvec)
     eps = -Jinv * F
     epsRel = eps .* alphavec.^(-1)
     diff = sqrt(sum(epsRel.^2)/m)
@@ -190,7 +190,7 @@ function newtonsUnr(m, alphavec, nvec, yarr, ybarvec, itMax, tol)
     # Iterate until we get a satisfactorily accurate estimate for the MLE
     while ((tol < diff) && (iteration < itMax))
         alphavec += eps
-        Jinv, F = funjacUnr(alphavec, nvec, yarr, ybarvec)
+        Jinv, F = funjacUnr(m, alphavec, nvec, yarr, ybarvec)
         eps = -Jinv * F
         epsRel = eps .* alphavec.^(-1)
         diff = sqrt(sum((epsRel.^2)/m))
@@ -241,53 +241,192 @@ function newtonsNull(alpha, n, yarr, ybar, itMax, tol)
     return alpha
 end
 
-# Get problem data and parameters
-csv_reader = CSV.File("ProjectData.csv")
-dataF = DataFrame(csv_reader)
-y = BigFloat.(dataF[:, 6])
-group = dataF[:, 1]
-m, n, ni, alphavec, nvec, yarr, ybar, ybarvec = getVars(group, y)
+"""
+    gammaTest(m::Int64, n::Int64, ni::Int64, alphavec::Matrix{BigFloat}, 
+    nvec::Matrix{Int64}, group::Vector{Int64}, yarr::Matrix{BigFloat}, 
+    ybar::BigFloat, ybarvec::Matrix{BigFloat})
 
-# Specify restraints of Newton's
-itMax = 1e3
-tol = 1e-13
+Perform the gamma likelihood-ratio test and return the maximum likelihood 
+estimator (MLEs), likelihood ratio, test statistic and p-value.
 
-# Estimate unrestricted MLEs
-alphavec = newtonsUnr(m, alphavec, nvec, yarr, ybarvec, itMax, tol)
-betavec = alphavec.^(-1) .* ybarvec
+Parameters
+----------
+`m::Int64`: number of groups.
 
-# Estimate MLEs under null
-alpha = 1
-alpha = newtonsNull(alpha, n, yarr, ybar, itMax, tol)
-beta = ybar/alpha
+`n::Int64`: total number of observations.
 
-# Likelihood ratio
-lam = (gamma(alpha) * (ybar/alpha)^(alpha))^(-n)
-lam *= prod(prod(yarr.^(alpha*ones(length(alphavec), 1)-alphavec), dims=2))
-lam *= prod((gamma.(alphavec) .* (ybarvec.*alphavec.^(-1)).^(alphavec)).^(nvec))
+`ni::Int64`: maximum sample size.
 
-# Test statistic, -2 ln(lambda)
-stat = -2*log(lam)
+`alphavec::Matrix{BigFloat}`: m x 1 matrix of MLE of ``\\alpha_i``.
 
-# Obtain p-value keeping in mind that under the null our test statistic
-# should asymptotically follow a chi-squared distribution with 2m-2 df
-pval = 1-chisqcdf(2*m-2, Float64(stat))
+`nvec::Matrix{Int64}`: m x 1 matrix of sample sizes for each group.
 
-# Printing important data
-println("For gamma model:")
-println("alpha (null)   = ", Float64(alpha))
-println("beta (null)    = ", Float64(beta))
-println("alpha_i        = ", Float64.(alphavec))
-println("beta_i         = ", Float64.(betavec))
-println("Lambda         = ", lam)
-println("Test statistic = ", Float64(stat))
-println("P-value        = ", pval)
-println("---------------------------------------")
+`group::Vector{Int64}`: vector of values of the grouping variable.
 
-# Exponential distribution test
-statExp = 2*n*log(ybar) - 2*sum(nvec .* log.(ybarvec))
-pvalExp = 1-chisqcdf(m-1, Float64(statExp))
-println("For exponential model:")
-println("Test statistic = ", Float64(statExp))
-println("P-value        = ", pvalExp)
-println("---------------------------------------")
+`yarr::Matrix{BigFloat}`: m x ni matrix of observed values of dependent 
+variable.
+
+`ybar::BigFloat`: overall mean of dependent variable.
+
+`ybarvec::Matrix{BigFloat}`: m x 1 matrix of the mean of each sample 
+(treatment group).
+
+Returns
+-------
+`alpha::BigFloat`: the MLE of ``\\alpha`` under the null.
+
+`beta::BigFloat`: the MLE of ``\\beta`` under the null.
+
+`alphavec::BigFloat`: the unrestricted MLE of ``\\alpha_i``.
+
+`betavec::BigFloat`: the unrestricted MLE of ``\\beta_i``.
+
+`lam::BigFloat`: ``\\lambda``, the likelihood-ratio. 
+
+`stat::BigFloat`: ``-2\\ln(\\lambda)``, our test statistic.
+
+`pval::BigFloat`: p-value of our test.
+"""
+function gammaTest(m, n, ni, alphavec, nvec, group, yarr, ybar, ybarvec)
+    # Specify constraints of Newton's
+    itMax = 1e3
+    tol = 1e-13
+
+    # Estimate unrestricted MLEs
+    alphavec = newtonsUnr(m, alphavec, nvec, yarr, ybarvec, itMax, tol)
+    betavec = alphavec.^(-1) .* ybarvec
+
+    # Estimate MLEs under null
+    alpha = 1
+    alpha = newtonsNull(alpha, n, yarr, ybar, itMax, tol)
+    beta = ybar/alpha
+
+    # Likelihood ratio
+    lam = (gamma(alpha) * (ybar/alpha)^(alpha))^(-n)
+    lam *= prod(prod(yarr.^(alpha*ones(length(alphavec), 1)-alphavec), dims=2))
+    lam *= prod((gamma.(alphavec) .* (ybarvec.*alphavec.^(-1)).^(alphavec)).^(nvec))
+
+    # Test statistic, -2 ln(lambda)
+    stat = -2*log(lam)
+
+    # Obtain p-value keeping in mind that under the null our test statistic
+    # should asymptotically follow a chi-squared distribution with 2m-2 df
+    pval = 1-chisqcdf(2*m-2, Float64(stat))
+
+    return alpha, beta, alphavec, betavec, lam, stat, pval
+end
+
+"""
+    printGamma(m::Int64, alpha::BigFloat, beta::BigFloat, 
+    alphavec::Matrix{BigFloat}, betavec::Matrix{BigFloat}, lam::BigFloat, 
+    stat::BigFloat, pval::BigFloat)
+
+Print the results of the gamma likelihood-ratio test. 
+
+Parameters
+----------
+`m::Int64`: the number of groups.
+
+`alpha::BigFloat`: the maximum likelihood estimator (MLE) of ``\\alpha`` 
+under the null.
+
+`beta::BigFloat`: the MLE of ``\\beta`` under the null.
+
+`alphavec::Matrix{BigFloat}`: m x 1 matrix of the unrestricted MLE of 
+``\\alpha_i``.
+
+`betavec::Matrix{BigFloat}`: m x 1 matrix of the unrestricted MLE of 
+``\\beta_i``.
+
+`lam::BigFloat`: ``\\lambda``, the likelihood-ratio.
+
+`stat::BigFloat`: ``-2\\ln{\\lambda}``, the test statistic.
+
+`pval::BigFloat`: p-value of our test.
+
+Returns
+-------
+Nothing.
+"""
+function printGamma(m, alpha, beta, alphavec, betavec, lam, stat, pval)
+    # Printing important data
+    println("For gamma model:")
+    println("alpha (null)       = ", Float64(alpha))
+    println("beta (null)        = ", Float64(beta))
+    println("alpha_i            = ", Float64.(alphavec))
+    println("beta_i             = ", Float64.(betavec))
+    println("Lambda             = ", lam)
+    println("Test statistic     = ", Float64(stat))
+    println("Degrees of freedom = ", 2*m-2)
+    println("P-value            = ", pval)
+    println("----------------------------------------------")
+end
+
+"""
+    printExp(m::Int64, n::Int64, nvec::Matrix{Int64}, ybar::BigFloat, 
+    ybarvec::Matrix{BigFloat})
+
+Print the results of the exponential likelihood-ratio test after performing it.
+
+Parameters
+----------
+`m::Int64`: number of groups.
+
+`n::Int64`: total number of observations.
+
+`nvec::Matrix{Int64}`: m x 1 matrix of sample sizes.
+
+`ybar::BigFloat`: overall mean of all observations.
+
+`ybar::Matrix{BigFloat}`: m x 1 matrix of the mean of each sample (treatment 
+group).
+
+Returns
+-------
+Nothing.
+"""
+function printExp(m, n, nvec, ybar, ybarvec)
+    # Exponential distribution test
+    statExp = 2*n*log(ybar) - 2*sum(nvec .* log.(ybarvec))
+    pvalExp = 1-chisqcdf(m-1, Float64(statExp))
+    println("For exponential model:")
+    println("Test statistic     = ", Float64(statExp))
+    println("Degrees of freedom = ", m - 1)
+    println("P-value            = ", pvalExp)
+    println("----------------------------------------------")
+end
+
+"""
+    main()
+
+Main function of script, by calling other functions it extracts the required 
+data, performs hypothesis tests and prints the results.
+
+Parameters
+----------
+None.
+
+Returns
+-------
+Nothing.
+"""
+function main()
+    # Get problem data and parameters
+    csv_reader = CSV.File("ProjectData.csv")
+    dataF = DataFrame(csv_reader)
+    y = BigFloat.(dataF[:, 6])
+    group = dataF[:, 1]
+    m, n, ni, alphavec, nvec, yarr, ybar, ybarvec = getVars(group, y)
+
+    # Perform the gamma test
+    alpha, beta, alphavec, betavec, lam, stat, pval = gammaTest(m, n, ni, 
+    alphavec, nvec, group, yarr, ybar, ybarvec)
+
+    # Print gamma and exp test MLEs and results
+    printGamma(m, alpha, beta, alphavec, betavec, lam, stat, pval)
+    printExp(m, n, nvec, ybar, ybarvec)
+end
+
+if isinteractive()
+    main()
+end

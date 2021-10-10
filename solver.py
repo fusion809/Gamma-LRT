@@ -117,7 +117,7 @@ def getVars(group, y):
 
     return m, ni, alphavec, nvec, yarr, ybarvec
 
-def funjacUnr(alphavec, nvec, yarr, ybarvec):
+def funjacUnr(m, alphavec, nvec, yarr, ybarvec):
     """
     Return inverse of Jacobian and function vector for unrestricted MLE 
     problem.
@@ -142,7 +142,6 @@ def funjacUnr(alphavec, nvec, yarr, ybarvec):
     """
     Jvec = nvec * (1/alphavec - polygamma(1, alphavec))
     Jinv = np.diagflat(1/Jvec)
-    #Jinv = np.diag(Jinv)
     logsum = np.reshape(np.sum(np.log(yarr), axis=1), (m, 1))
     F = -nvec * ( polygamma(0, alphavec) + np.log(ybarvec/alphavec)) + logsum
 
@@ -198,16 +197,19 @@ def newtonsUnr(m, alphavec, nvec, yarr, ybarvec, itMax, tol):
     tol      : float.
                Relative error tolerance.
     """
-    Jinv, F = funjacUnr(alphavec, nvec, yarr, ybarvec)
+    # Data for first iteration of Newton's
+    Jinv, F = funjacUnr(m, alphavec, nvec, yarr, ybarvec)
     eps = -np.matmul(Jinv, F)
     epsRel = eps / alphavec
     diff = np.sqrt(np.sum(epsRel**2)/m)
 
+    # Initialize iteration
     iteration = 0
     
+    # Apply Newton's until diff drops to or below tol
     while (tol < diff and iteration < itMax):
         alphavec += eps
-        Jinv, F = funjacUnr(alphavec, nvec, yarr, ybarvec)
+        Jinv, F = funjacUnr(m, alphavec, nvec, yarr, ybarvec)
         eps = -np.matmul(Jinv, F)
         epsRel = eps / alphavec
         diff = np.sqrt(np.sum(epsRel**2)/m)
@@ -254,45 +256,64 @@ def newtonsNull(alpha, n, yarr, ybar, itMax, tol):
     print("Number of iterations used to approximate alpha = {}".format(iteration))
     return alpha
 
-# alphavec's 2nd element is -inf when using OutlierRm
-#group, y = readData("ProjectDataOutlierRm.csv", 0, 4)
-# alphavec is fine when using original data set
-# But lam is nan due to gamma(alphavec) failing due to floating
-# point arithmetic limitations
-group, y = readData("ProjectData.csv", 0, 5)
-m, ni, alphavec, nvec, yarr, ybarvec = getVars(group, y)
-n = np.size(y)
-ybar = np.mean(yarr)
-itMax = 1e3
-tol = 1e-13
-alphavec = newtonsUnr(m, alphavec, nvec, yarr, ybarvec, itMax, tol)
-betavec = ybarvec/alphavec
-alpha = 1
-alpha = newtonsNull(alpha, n, yarr, ybar, itMax, tol)
-beta = ybar / alpha
+def main():
+    """
+    Main script of the program, through calling other functions it extracts the
+    required data, performs the hypothesis tests and prints the results.
 
-# For my dataset there is an alphavec entry = 260.2153579
-# Gamma(260.2153579) > 1e508, too big for ufuncs like scipy.special.gamma
-# to handle
-# I get the error:
-# TypeError: ufunc 'gamma' not supported for the input types, and the inputs 
-# could not be safely coerced to any supported types according to the casting 
-# rule ''safe''
-# When I convert alphavec to float128 type before running gamma on it
-lam = np.power(1/(gamma(alpha)*(ybar/alpha)**(alpha)), n)
-lam = lam * np.prod(np.power((gamma(alphavec) * np.power(ybarvec/alphavec, 
-alphavec)), nvec))
-lam *= np.prod(np.prod(np.power(yarr, alpha-alphavec), axis=1))
+    Parameters
+    ----------
+    None.
 
-# Test statistic
-stat = -2*np.log(lam)
+    Returns
+    -------
+    Nothing.
+    """
+    # alphavec's 2nd element is -inf when using OutlierRm
+    # group, y = readData("ProjectDataOutlierRm.csv", 0, 4)
+    # alphavec is fine when using original data set
+    # But lam is nan due to gamma(alphavec) failing due to floating
+    # point arithmetic limitations
+    group, y = readData("ProjectData.csv", 0, 5)
+    m, ni, alphavec, nvec, yarr, ybarvec = getVars(group, y)
+    n = np.size(y)
+    ybar = np.mean(yarr)
+    # Constraints on Newton's
+    itMax = 1e3
+    tol = 1e-13
 
-# P-value
-pval = 1 - chi2.cdf(stat, 2*m-2)
+    # MLEs
+    alphavec = newtonsUnr(m, alphavec, nvec, yarr, ybarvec, itMax, tol)
+    betavec = ybarvec/alphavec
+    alpha = 1
+    alpha = newtonsNull(alpha, n, yarr, ybar, itMax, tol)
+    beta = ybar / alpha
 
-# Equivalent test for exponential distribution
-# Under null, all groups share the same exponential distribution parameter.
-# Under alternative hypothesis, at least two groups have different exponential
-# distribution parameters.
-statExp = 2*n*np.log(ybar) - 2*np.sum(nvec * np.log(ybarvec))
-pvalExp = 1 - chi2.cdf(statExp, m-1)
+    # For my dataset there is an alphavec entry = 260.2153579
+    # Gamma(260.2153579) > 1e508, too big for ufuncs like scipy.special.gamma
+    # to handle
+    # I get the error:
+    # TypeError: ufunc 'gamma' not supported for the input types, and the inputs 
+    # could not be safely coerced to any supported types according to the casting 
+    # rule ''safe''
+    # When I convert alphavec to float128 type before running gamma on it
+    lam = np.power(1/(gamma(alpha)*(ybar/alpha)**(alpha)), n)
+    lam *= np.prod(np.power((gamma(alphavec) * np.power(ybarvec/alphavec, 
+    alphavec)), nvec))
+    lam *= np.prod(np.prod(np.power(yarr, alpha-alphavec), axis=1))
+    
+    # Test statistic
+    stat = -2*np.log(lam)
+    
+    # P-value
+    pval = 1 - chi2.cdf(stat, 2*m-2)
+    
+    # Equivalent test for exponential distribution
+    # Under null, all groups share the same exponential distribution parameter.
+    # Under alternative hypothesis, at least two groups have different exponential
+    # distribution parameters.
+    statExp = 2*n*np.log(ybar) - 2*np.sum(nvec * np.log(ybarvec))
+    pvalExp = 1 - chi2.cdf(statExp, m-1)
+
+if __name__ == "__main__":
+    main()
